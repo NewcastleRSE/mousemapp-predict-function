@@ -7,26 +7,19 @@
 			"command": "host start",
 			"problemMatcher": "$func-node-watch",
 			"isBackground": true,
-			"dependsOn": "npm build (functions)"
+			"dependsOn": "yarn build (functions)"
 		},
 		{
 			"type": "shell",
-			"label": "npm build (functions)",
-			"command": "npm run build",
-			"dependsOn": "npm install (functions)",
+			"label": "yarn build (functions)",
+			"command": "yarn run build",
+			"dependsOn": "yarn install (functions)",
 			"problemMatcher": "$tsc"
 		},
 		{
 			"type": "shell",
-			"label": "npm install (functions)",
-			"command": "npm install"
-		},
-		{
-			"type": "shell",
-			"label": "npm prune (functions)",
-			"command": "npm prune --production",
-			"dependsOn": "npm build (functions)",
-			"problemMatcher": []
+			"label": "yarn install (functions)",
+			"command": "yarn install"
 		}
 	]
 }
