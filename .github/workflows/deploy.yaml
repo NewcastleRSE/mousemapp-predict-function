@@ -27,8 +27,8 @@ jobs:
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         yarn install
-        yarn build --if-present
-        yarn test --if-present
+        yarn build
+        yarn test
         popd
     - name: 'Run Azure Functions action'
       uses: Azure/functions-action@v1
