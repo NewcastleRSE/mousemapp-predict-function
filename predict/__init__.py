@@ -39,5 +39,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     return func.HttpResponse(
         json.dumps(metadata),
-        status_code=200
+        status_code=200,
+        headers={"Content-Type": "application/json"}
     )
