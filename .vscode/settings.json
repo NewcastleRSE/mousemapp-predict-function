@@ -3,5 +3,8 @@
     "azureFunctions.postDeployTask": "yarn install (functions)",
     "azureFunctions.projectLanguage": "TypeScript",
     "azureFunctions.projectRuntime": "~4",
-    "debug.internalConsoleOptions": "neverOpen"
+    "debug.internalConsoleOptions": "neverOpen",
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": "file:///Users/nmdt3/Code/mouse-mapp/mousemapp-predict-function/.github/workflows/deploy.yaml"
+    }
 }
