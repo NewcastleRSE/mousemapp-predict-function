@@ -1,6 +1,6 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import parseMultipartFormData from '@anzp/azure-function-multipart'
-import * as tf from '@tensorflow/tfjs-node'
+import * as tf from '@tensorflow/tfjs'
 
 interface Metadata {
     name: string
