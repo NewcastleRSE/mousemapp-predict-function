@@ -2,7 +2,9 @@ import logging
 import io
 import os
 import json
-import time
+import torch
+from torch import nn
+from torchvision import transforms
 import uuid
 from PIL import Image
 from azure.storage.blob import BlobServiceClient,BlobClient
@@ -12,11 +14,20 @@ import azure.functions as func
 ACCOUNT_NAME = os.getenv('ACCOUNT_NAME')
 ACCOUNT_KEY = os.getenv('ACCOUNT_KEY')
 CONTAINER_NAME = 'uploads'
+CONN_STR = "DefaultEndpointsProtocol=https;AccountName=" + ACCOUNT_NAME + ";AccountKey=" + ACCOUNT_KEY + ";EndpointSuffix=core.windows.net"
+CROP_SIZE=224
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    CONN_STR = "DefaultEndpointsProtocol=https;AccountName=" + ACCOUNT_NAME + ";AccountKey=" + ACCOUNT_KEY + ";EndpointSuffix=core.windows.net"
+    
+    test_transforms = transforms.Compose(
+        [
+            transforms.Resize((crop_size, crop_size)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485], [0.229]),
+        ]
+    )
 
     metadata = {
         "name": req.form['name'],
