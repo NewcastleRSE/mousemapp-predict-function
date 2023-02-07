@@ -6,14 +6,17 @@ import time
 import uuid
 from PIL import Image
 from azure.storage.blob import BlobServiceClient,BlobClient
-from dotenv import dotenv_values
 
 import azure.functions as func
 
-config = dotenv_values(".env")
+ACCOUNT_NAME = os.getenv('ACCOUNT_NAME')
+ACCOUNT_KEY = os.getenv('ACCOUNT_KEY')
+CONTAINER_NAME = 'uploads'
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
+
+    CONN_STR = "DefaultEndpointsProtocol=https;AccountName=" + ACCOUNT_NAME + ";AccountKey=" + ACCOUNT_KEY + ";EndpointSuffix=core.windows.net"
 
     metadata = {
         "name": req.form['name'],
@@ -33,7 +36,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         image.save(imgByteIO, format=image.format)
         imgByteArr = imgByteIO.getvalue()
 
-        blob = BlobClient.from_connection_string(conn_str=config['conn_str'], container_name=config['container_name'], blob_name=str(uuid.uuid4()) + extension)
+        blob = BlobClient.from_connection_string(conn_str=CONN_STR, container_name=CONTAINER_NAME, blob_name=str(uuid.uuid4()) + extension)
         blob.upload_blob(imgByteArr)
         blob.set_blob_metadata(metadata)
 

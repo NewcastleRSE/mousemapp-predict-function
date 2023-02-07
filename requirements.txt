@@ -4,5 +4,4 @@
 
 azure-functions
 azure.storage.blob
-python-dotenv
 pillow
