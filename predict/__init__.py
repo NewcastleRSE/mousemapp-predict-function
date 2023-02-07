@@ -17,15 +17,13 @@ ACCOUNT_KEY = os.getenv('ACCOUNT_KEY')
 UPLOADS_CONTAINER_NAME = 'uploads'
 MODEL_CONTAINER_NAME = 'model'
 CONN_STR = "DefaultEndpointsProtocol=https;AccountName=" + ACCOUNT_NAME + ";AccountKey=" + ACCOUNT_KEY + ";EndpointSuffix=core.windows.net"
-CROP_SIZE=224
+CROP_SIZE = 224
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
     container = ContainerClient.from_connection_string(conn_str=CONN_STR, container_name=MODEL_CONTAINER_NAME)
     modelBlobs = container.list_blobs()
-
-    print(os.getcwd() + "/model")
 
     for blob in modelBlobs:
         blobClient = container.get_blob_client(blob)
@@ -46,6 +44,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         "cage": req.form['cage'],
         "mouseID": req.form['mouseID']
     }
+
+    scores = []
+    filemetadata = []
 
     for file in req.files.values():
 
@@ -86,20 +87,37 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             prob_softmax = torch.softmax(pred, dim=1)
             _, standard_prediction = torch.max(prob_softmax, 1)
             score = standard_prediction.detach().cpu().numpy()[0] + 2
-            print("BCS:", score)
+            scores.append(score)
 
             filename, extension = os.path.splitext(file.filename)
 
-            metadata['filename'] = filename + extension
-            metadata['mimeType'] = file.mimetype
-            metadata['bcs'] = str(score)
+            file_metadata = {
+                "filename": filename + extension,
+                "mimeType": file.mimetype,
+                "bcs": str(score)
+            }
+
+            filemetadata.append(file_metadata)
+
+            print({**metadata, **file_metadata})
 
             blob = BlobClient.from_connection_string(conn_str=CONN_STR, container_name=UPLOADS_CONTAINER_NAME, blob_name=str(uuid.uuid4()) + extension)
             blob.upload_blob(imgByteArr)
-            blob.set_blob_metadata(metadata)
+            blob.set_blob_metadata({**metadata, **file_metadata})
 
         else:
-            print("please use a different image")
+            return func.HttpResponse(
+                json.dumps({'message': 'Invalid image detected'}),
+                status_code=415,
+                headers={"Content-Type": "application/json"}
+            )
+            
+
+    metadata['files'] = filemetadata
+    if len(scores) > 0:
+        metadata['bcs'] = sum(scores)/len(scores)
+    else:
+       metadata['bcs'] = 0 
 
     return func.HttpResponse(
         json.dumps(metadata),
