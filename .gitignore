@@ -50,3 +50,9 @@ __azurite_db*__.json
 # Model files
 predict/model/**
 !predict/model/.gitkeep
+
+# Terraform
+
+*.tfstate
+*.tfstate.*
+.terraform
