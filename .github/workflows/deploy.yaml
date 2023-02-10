@@ -41,9 +41,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: python-app
-          path: |
-            . 
-            !venv/
+          path: venv
 
   deploy:
     runs-on: ubuntu-latest
@@ -67,5 +65,5 @@ jobs:
           slot-name: 'production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           publish-profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_PROFILE }}
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
+          # scm-do-build-during-deployment: true
+          # enable-oryx-build: true
