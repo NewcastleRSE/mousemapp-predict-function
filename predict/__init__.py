@@ -22,21 +22,21 @@ CROP_SIZE = 224
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    container = ContainerClient.from_connection_string(conn_str=CONN_STR, container_name=MODEL_CONTAINER_NAME)
-    modelBlobs = container.list_blobs()
+    # container = ContainerClient.from_connection_string(conn_str=CONN_STR, container_name=MODEL_CONTAINER_NAME)
+    # modelBlobs = container.list_blobs()
 
-    for blob in modelBlobs:
-        blobClient = container.get_blob_client(blob)
+    # for blob in modelBlobs:
+    #     blobClient = container.get_blob_client(blob)
 
-        print(os.getcwd() + "/predict/model/" + blob.name)
+    #     print(os.getcwd() + "/predict/model/" + blob.name)
 
-        if os.path.isfile(os.getcwd() + "/predict/model/" + blob.name):
-            print("Model exists locally")
-        else:
-            print("Model does not exist locally, download from Azure")
-            with open(os.getcwd() + "/model", "wb") as file:
-                download_stream = blobClient.download_blob()
-                file.write(download_stream.readall())
+    #     if os.path.isfile(os.getcwd() + "/predict/model/" + blob.name):
+    #         print("Model exists locally")
+    #     else:
+    #         print("Model does not exist locally, download from Azure")
+    #         with open(os.getcwd() + "/model", "wb") as file:
+    #             download_stream = blobClient.download_blob()
+    #             file.write(download_stream.readall())
 
     metadata = {
         "name": req.form['name'],
