@@ -45,15 +45,12 @@ jobs:
         with:
           action: download
           connection_string: ${{ secrets.STORAGE_CONNECTION_STRING }}
-          container_name: models
+          container_name: model
           local_directory: ./predict/model
 
       - name: Install dependencies
         shell: bash
-        run: |
-          ls .
-          ls ./predict
-          ls ./predict/model
+        run: ls ./predict/model
 
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
