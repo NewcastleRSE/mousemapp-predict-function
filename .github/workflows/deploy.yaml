@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: python-app
-          path: venv
+          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
   deploy:
     runs-on: ubuntu-latest
