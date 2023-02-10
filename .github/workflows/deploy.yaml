@@ -1,8 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure Functions: https://aka.ms/python-webapps-actions
-
-name: Build and deploy Python project to Azure Function App - MouseMapp
+name: Build & Deploy
 
 on:
   push:
@@ -12,27 +8,22 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
-  PYTHON_VERSION: '3.9' # set this to the python version to use (supports 3.6, 3.7, 3.8)
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
+  PYTHON_VERSION: '3.9'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Python version
+      - name: Setup Python Version
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      # - name: Create and start virtual environment
-      #   run: |
-      #     python -m venv venv
-      #     source venv/bin/activate
-
-      - name: Install dependencies
+      - name: Install Dependencies
         shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
@@ -40,7 +31,7 @@ jobs:
           pip install -r requirements.txt --target=".python_packages/lib/site-packages"
           popd
 
-      - name: Copy files
+      - name: Copy Model From Azure
         uses: ulaval/azure-blob-copy-action@v1
         with:
           action: download
@@ -48,16 +39,10 @@ jobs:
           container_name: model
           local_directory: ./predict/model
 
-      - name: Install dependencies
-        shell: bash
-        run: ls ./predict/model
-
-      - name: 'Deploy to Azure Functions'
+      - name: Deploy to Azure Function
         uses: Azure/functions-action@v1
         id: deploy-to-function
         with:
           app-name: 'mousemapp'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           publish-profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_PROFILE }}
-          # scm-do-build-during-deployment: true
-          # enable-oryx-build: true
