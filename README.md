@@ -1,58 +1,72 @@
-# Standard Project
-A template repo for the standard RSE project
+# Mouse MApp Predict Function
+A HTTP Trigger Azure Function for running new images through the [MouseMApp Model](https://github.com/NewcastleRSE/Mouse_MApp_model).
 
 ## About
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sollicitudin ante at eleifend eleifend. Sed non vestibulum nisi. Aliquam vel condimentum quam. Donec fringilla et purus at auctor. Praesent euismod vitae metus non consectetur. Sed interdum aliquet nisl at efficitur. Nulla urna quam, gravida eget elementum eget, mattis nec tortor. Fusce ut neque tellus. Integer at magna feugiat lacus porta posuere eget vitae metus.
-
-Curabitur a tempus arcu. Maecenas blandit risus quam, quis convallis justo pretium in. Suspendisse rutrum, elit at venenatis cursus, dolor ligula iaculis dui, ut dignissim enim justo at ligula. Donec interdum dignissim egestas. Nullam nec ultrices enim. Nam quis arcu tincidunt, auctor purus sit amet, aliquam libero. Fusce rhoncus lectus ac imperdiet varius. Sed gravida urna eros, ac luctus justo condimentum nec. Integer ultrices nibh in neque sagittis, at pretium erat pretium. Praesent feugiat purus id iaculis laoreet. Proin in tellus tristique, congue ante in, sodales quam. Sed imperdiet est tortor, eget vestibulum tortor pulvinar volutpat. In et pretium nisl.
+The function is configured for use via a HTTP Post request, taking in multipart form data and then running the posted file against the Mouse MApp classifier model. On completion the image is uploaded to Azure Storage and tagged with the metadata accompanying the initial post request.
 
 ### Project Team
-Dr L. Ipsum, Newcastle University  ([lorem.ipsum@newcastle.ac.uk](mailto:lorem.ipsum@newcastle.ac.uk))  
-Professor D. Sit Amet, XY University  ([d.sit.amet@newcastle.ac.uk](mailto:d.sit.amet@example.com))  
+Matt Leach, Newcastle University  ([matthew.leach@ncl.ac.uk](mailto:matthew.leach@ncl.ac.uk))   
+Satnam Dlay, Newcastle University  ([rsatnam.dlay@newcastle.ac.uk](mailto:rsatnam.dlay@newcastle.ac.uk))
 
 ### RSE Contact
-C. Adipiscing  
+Nik Khadijah Nik Aznan 
 RSE Team  
 Newcastle University  
-([consectetur.adpiscing@newcastle.ac.uk](mailto:consectetur.adpiscing@newcastle.ac.uk))  
+([nik.nik-aznan@newcastle.ac.uk](mailto:nik.nik-aznan@newcastle.ac.uk))  
 
 ## Built With
 
-This section is intended to list the frameworks and tools you're using to develop this software. Please link to the home page or documentatation in each case.
+The application is a native Azure Function, so requires the Azure Functions Core Tools to be installed for local development.
 
-[Framework 1](https://something.com)  
-[Framework 2](https://something.com)  
-[Framework 3](https://something.com)  
+[Azure Function Core Tools](https://github.com/Azure/azure-functions-core-tools)  
 
 ## Getting Started
 
 ### Prerequisites
 
-Any tools or versions of languages needed to run code. For example specific Python or Node versions. Minimum hardware requirements also go here.
+This guide assumes both Python 3.9 and Azure Functions Core Tools are installed. The files `model_ae.pt` and `model_pytorch_alexnet.pt` must be present in the `model` container in the storage account.
 
 ### Installation
 
-How to build or install the applcation.
+Start a new Python virtual environment.
+
+```bash
+python -m venv .venv
+```
+
+Install the dependencies
+
+```bash
+pip install -r requirements.txt
+```
+Export the required environment variables, both of which can be obtained from the Azure Storage account via the Azure Portal.
+
+```bash
+export ACCOUNT_NAME=XXXXXXXXXXX
+export ACCOUNT_KEY=XXXXXXXXXXX
+```
 
 ### Running Locally
 
-How to run the application on your local system.
+To start the function locally run
 
-### Running Tests
-
-How to run tests on your local system.
+```bash
+func start
+```
 
 ## Deployment
 
-### Local
+Deployment is handled via a GitHub workflow that builds and deploys the function directly to Azure.
 
-Deploying to a production style setup but on the local system. Examples of this would include `venv`, `anaconda`, `Docker` or `minikube`. 
+### Terraform
+
+All of the production resources required are configured via a Terraform script in the `terraform` directory. Running `terraform apply` will create the resource group, storage, app service and function needed.
 
 ### Production
 
-Deploying to the production system. Examples of this would include cloud, HPC or virtual machine. 
-
+Any `push` on the main branch will trigger a build and release of the function. As part of the build process the model files are pulled into the function directory from the storage container, so these files **must** be there for the build to complete.
+ 
 ## Usage
 
 Any links to production environment, video demos and screenshots.
@@ -60,9 +74,9 @@ Any links to production environment, video demos and screenshots.
 ## Roadmap
 
 - [x] Initial Research  
-- [ ] Minimum viable product <-- You are Here  
-- [ ] Alpha Release  
-- [ ] Feature-Complete Release  
+- [x] Minimum viable product  
+- [x] Alpha Release  
+- [x] Feature-Complete Release  
 
 ## Contributing
 
@@ -79,19 +93,4 @@ https://nvie.com/posts/a-successful-git-branching-model/
 
 ## License
 
-## Citiation
-
-Please cite the associated papers for this work if you use this code:
-
-```
-@article{xxx2021paper,
-  title={Title},
-  author={Author},
-  journal={arXiv},
-  year={2021}
-}
-```
-
-
-## Acknowledgements
-This work was funded by a grant from the UK Research Councils, EPSRC grant ref. EP/L012345/1, “Example project title, please update”.
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
