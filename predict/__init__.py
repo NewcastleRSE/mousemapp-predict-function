@@ -51,6 +51,24 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     scores = []
     filemetadata = []
 
+    test_transforms = transforms.Compose(
+        [
+            transforms.Resize((CROP_SIZE, CROP_SIZE)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485], [0.229]),
+        ]
+    )
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    model_ae = torch.load(os.getcwd() + "/predict/model/model_ae.pt", map_location=torch.device("cpu"))
+    model_ae.to(device)
+
+    model_pred = torch.load(os.getcwd() + "/predict/model/model_pytorch_alexnet.pt", map_location=torch.device("cpu"))
+    model_pred.to(device)
+
+    criterion = nn.MSELoss()
+
     for file in req.files.keys():
 
         image = Image.open(req.files[file])
@@ -58,23 +76,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         image.save(imgByteIO, format=image.format)
         imgByteArr = imgByteIO.getvalue()
 
-        test_transforms = transforms.Compose(
-            [
-                transforms.Resize((CROP_SIZE, CROP_SIZE)),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485], [0.229]),
-            ]
-        )
-
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        model_ae = torch.load(os.getcwd() + "/predict/model/model_ae.pt", map_location=torch.device("cpu"))
-        model_ae.to(device)
         model_ae.eval()
-        criterion = nn.MSELoss()
 
-        model_pred = torch.load(os.getcwd() + "/predict/model/model_pytorch_alexnet.pt", map_location=torch.device("cpu"))
-        model_pred.to(device)
         model_pred.eval()
 
         img = image.convert("RGB")
@@ -82,7 +85,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         img = torch.unsqueeze(img, 0)
 
         recon = model_ae(img)
-
         loss_ae = criterion(img, recon).item()
 
         if loss_ae < 0.0400:
@@ -116,8 +118,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 json.dumps({'message': 'Invalid image detected'}),
                 status_code=415,
                 headers={"Content-Type": "application/json"}
-            )
-            
+            ) 
 
     metadata['files'] = filemetadata
     if len(scores) > 0:
