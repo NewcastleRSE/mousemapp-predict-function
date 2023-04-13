@@ -22,20 +22,38 @@ CROP_SIZE = 224
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    metadata = {
-        "observerName": req.form['observerName'],
-        "roomID": req.form['roomID'],
-        "cageID": req.form['cageID'],
-        "mouseID": req.form['mouseID'],
-        "palpationScore": req.form['palpationScore']
-    }
+    metadata = req.form.to_dict()
+    inputValidation = {}
+    fileValidation = {}
+
+    if not metadata.get('observerName'):
+        inputValidation['observerName'] = 'An observer name is required'
+
+    if not metadata.get('roomID'):
+        inputValidation['roomID'] = 'A room ID is required'
+
+    if not metadata.get('cageID'):
+        inputValidation['cageID'] = 'A cage ID is required'
+
+    if not metadata.get('mouseID'):
+        inputValidation['mouseID'] = 'A mouse ID is required'
+
+    if not req.files.get('image1') and not req.files.get('image2') and not req.files.get('image3'):
+        inputValidation['images'] = 'An image of a mouse is required'
+
+    if inputValidation:
+        return func.HttpResponse(
+            json.dumps({'errors': inputValidation}),
+            status_code=415,
+            headers={"Content-Type": "application/json"}
+        )
 
     scores = []
     filemetadata = []
 
-    for file in req.files.values():
+    for file in req.files.keys():
 
-        image = Image.open(file)
+        image = Image.open(req.files[file])
         imgByteIO = io.BytesIO()
         image.save(imgByteIO, format=image.format)
         imgByteArr = imgByteIO.getvalue()
@@ -74,11 +92,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             score = standard_prediction.detach().cpu().numpy()[0] + 2
             scores.append(score)
 
-            filename, extension = os.path.splitext(file.filename)
+            filename, extension = os.path.splitext(req.files[file].filename)
 
             file_metadata = {
                 "filename": filename + extension,
-                "mimeType": file.mimetype,
+                "mimeType": req.files[file].mimetype,
                 "bcs": str(score)
             }
 
@@ -91,6 +109,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             blob.set_blob_metadata({**metadata, **file_metadata})
 
         else:
+            fileValidation[file] = 'Invalid image detected'
+
+        if fileValidation:
             return func.HttpResponse(
                 json.dumps({'message': 'Invalid image detected'}),
                 status_code=415,
